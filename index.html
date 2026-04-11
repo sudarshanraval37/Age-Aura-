@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AgeAura – Age Calculator</title>
+<style>
+:root{--bg:#f0f4ff;--card:#fff;--primary:#6c63ff;--accent:#ff6584;--text:#2d2d2d;--subtext:#666;--border:#dde3f0;--input-bg:#f8f9ff;--shadow:0 8px 32px rgba(108,99,255,.13);--btn-shadow:0 4px 15px rgba(108,99,255,.35);--error:#e53e3e;}
+body.dark{--bg:#0f0f1a;--card:#1a1a2e;--primary:#a78bfa;--accent:#ff6584;--text:#e2e8f0;--subtext:#94a3b8;--border:#2d2d4e;--input-bg:#16213e;--shadow:0 8px 32px rgba(0,0,0,.4);--btn-shadow:0 4px 15px rgba(124,58,237,.4);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
+header{text-align:center;padding:2.5rem 1rem 1rem;position:relative;}
+.logo{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#6c63ff,#ff6584);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;}
+.tagline{color:var(--subtext);font-size:.95rem;margin-top:.3rem;}
+.toggle-wrap{position:absolute;top:1.5rem;right:1.5rem;}
+.toggle-btn{background:var(--card);border:2px solid var(--border);border-radius:50px;padding:.4rem .9rem;cursor:pointer;font-size:1.1rem;color:var(--text);transition:all .3s;display:flex;align-items:center;gap:.4rem;}
+.toggle-btn:hover{border-color:var(--primary);}
+.container{max-width:640px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+.card{background:var(--card);border-radius:24px;padding:2rem;box-shadow:var(--shadow);border:1px solid var(--border);transition:background .3s,box-shadow .3s;}
+.form-group{margin-bottom:1.2rem;}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--subtext);margin-bottom:.45rem;text-transform:uppercase;letter-spacing:.5px;}
+input{width:100%;padding:.75rem 1rem;border:2px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text);font-size:1rem;transition:border .25s,box-shadow .25s;outline:none;}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(108,99,255,.12);}
+input::placeholder{color:var(--subtext);opacity:.7;}
+.calc-btn{width:100%;padding:.9rem;background:linear-gradient(135deg,#6c63ff,#a78bfa);color:#fff;border:none;border-radius:14px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:.5rem;box-shadow:var(--btn-shadow);transition:transform .2s,box-shadow .2s;}
+.calc-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,.45);}
+.calc-btn:active{transform:translateY(0);}
+.msg{font-size:.88rem;padding:.5rem .85rem;border-radius:8px;margin-top:.4rem;display:none;}
+.msg.error{background:#fff5f5;color:var(--error);border:1px solid #feb2b2;display:block;}
+body.dark .msg.error{background:#2d1515;}
+#result-section{display:none;margin-top:1.8rem;}
+.result-header{background:linear-gradient(135deg,#6c63ff,#a78bfa);border-radius:14px;padding:1.5rem;text-align:center;color:#fff;margin-bottom:1.2rem;}
+body.dark .result-header{background:linear-gradient(135deg,#4c1d95,#7c3aed);}
+.result-name{font-size:1.3rem;font-weight:700;}
+.result-dob{font-size:.88rem;opacity:.75;margin-top:.2rem;}
+.result-main{font-size:1.6rem;font-weight:800;margin:.7rem 0 .2rem;line-height:1.3;}
+.result-main .unit{font-size:1rem;font-weight:500;opacity:.85;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;}
+.stat-card{background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:1rem .8rem;text-align:center;transition:transform .2s;}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-val{font-size:1.45rem;font-weight:800;color:var(--primary);line-height:1.1;}
+.stat-label{font-size:.72rem;color:var(--subtext);margin-top:.25rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.stat-card.live .stat-val{color:var(--accent);}
+.download-row{display:flex;gap:.85rem;margin-top:1.3rem;}
+.dl-btn{flex:1;padding:.7rem;border-radius:12px;border:2px solid var(--border);background:var(--card);color:var(--text);font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s;}
+.dl-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--input-bg);}
+.dl-btn:disabled{opacity:.5;cursor:not-allowed;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.animate{animation:fadeUp .45s ease forwards;}
+footer{text-align:center;color:var(--subtext);font-size:.8rem;padding-bottom:2rem;}
+@media(max-width:420px){.stats-grid{grid-template-columns:repeat(2,1fr);}.result-main{font-size:1.3rem;}.logo{font-size:1.7rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">AgeAura ✨</div>
+  <p class="tagline">Developed By Khushi & Raval</p>
+  <div class="toggle-wrap">
+    <button class="toggle-btn" onclick="toggleDark()" id="themeBtn">🌙 Dark</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <div class="form-group">
+      <label for="userName">Your Name</label>
+      <input type="text" id="userName" placeholder="e.g. Arjun Sharma" maxlength="40"/>
+    </div>
+    <div class="form-group">
+      <label for="dob">Date of Birth *</label>
+      <input type="date" id="dob"/>
+      <div class="msg" id="dobMsg"></div>
+    </div>
+    <div class="form-group">
+      <label for="targetDate">Target Date <span style="font-weight:400;text-transform:none">(optional – defaults to today)</span></label>
+      <input type="date" id="targetDate"/>
+      <div class="msg" id="targetMsg"></div>
+    </div>
+    <button class="calc-btn" onclick="calculate()">✨ Calculate My Age</button>
+
+    <div id="result-section">
+      <div class="result-header">
+        <div class="result-name" id="res-name">—</div>
+        <div class="result-dob"  id="res-dob">—</div>
+        <div class="result-main" id="res-main">—</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="s-months">—</div><div class="stat-label">Total Months</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-days">—</div><div class="stat-label">Total Days</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-hours">—</div><div class="stat-label">Total Hours</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-minutes">—</div><div class="stat-label">Total Minutes</div></div>
+        <div class="stat-card live"><div class="stat-val" id="s-seconds">—</div><div class="stat-label">⚡ Seconds</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-next">—</div><div class="stat-label">Days to Birthday</div></div>
+      </div>
+      <div class="download-row">
+        <button class="dl-btn" id="btnPDF" onclick="downloadPDF()">📄 Download PDF</button>
+        <button class="dl-btn" id="btnPNG" onclick="downloadPNG()">🖼️ Download PNG</button>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>Made with 💜 by AgeAura &nbsp;|&nbsp; © 2026</footer>
+
+<script>
+// ─── lazy loader ───────────────────────────────────────────────
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ─── dark mode ─────────────────────────────────────────────────
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent=
+    document.body.classList.contains('dark')?'☀️ Light':'🌙 Dark';
+}
+
+// ─── globals ────────────────────────────────────────────────────
+let liveTimer=null, storedDOB=null;
+// exportData holds everything needed to draw the canvas export
+let exportData={};
+
+// ─── helpers ────────────────────────────────────────────────────
+const fmt     = n => Math.floor(n).toLocaleString('en-IN');
+const fmtDate = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+
+// ─── accurate age calc ──────────────────────────────────────────
+function calcAge(dob,target){
+  let y1=dob.getFullYear(),m1=dob.getMonth(),d1=dob.getDate();
+  let y2=target.getFullYear(),m2=target.getMonth(),d2=target.getDate();
+  let yrs=y2-y1,mos=m2-m1,dys=d2-d1;
+  if(dys<0){mos--;dys+=new Date(y2,m2,0).getDate();}
+  if(mos<0){yrs--;mos+=12;}
+  const diffMs=target-dob;
+  const totalSec=Math.floor(diffMs/1000);
+  const totalMin=Math.floor(totalSec/60);
+  const totalHr =Math.floor(totalMin/60);
+  const totalDay=Math.floor(totalHr/24);
+  let nb=new Date(y2,m1,d1);if(nb<=target)nb=new Date(y2+1,m1,d1);
+  return{exactYears:yrs,exactMonths:mos,exactDays:dys,
+    totalMonths:yrs*12+mos,totalDays:totalDay,
+    totalHours:totalHr,totalMinutes:totalMin,
+    totalSeconds:totalSec,
+    daysToNext:Math.ceil((nb-target)/86400000)};
+}
+
+// ─── validation ─────────────────────────────────────────────────
+function validate(){
+  let ok=true;
+  const dobEl=document.getElementById('dob'),tEl=document.getElementById('targetDate');
+  const dobMsg=document.getElementById('dobMsg'),tMsg=document.getElementById('targetMsg');
+  dobMsg.className='msg';dobMsg.textContent='';
+  tMsg.className  ='msg';tMsg.textContent  ='';
+  if(!dobEl.value){
+    dobMsg.textContent='⚠️ Please enter your Date of Birth.';
+    dobMsg.className='msg error';ok=false;
+  } else {
+    const dob=new Date(dobEl.value+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);
+    if(dob>=now){dobMsg.textContent='⚠️ Date of Birth cannot be today or in the future.';dobMsg.className='msg error';ok=false;}
+  }
+  if(ok&&tEl.value){
+    if(new Date(tEl.value+'T00:00:00')<=new Date(dobEl.value+'T00:00:00')){
+      tMsg.textContent='⚠️ Target date must be after DOB.';tMsg.className='msg error';ok=false;
+    }
+  }
+  return ok;
+}
+
+// ─── main calculate ─────────────────────────────────────────────
+function calculate(){
+  if(!validate())return;
+  const name  =document.getElementById('userName').value.trim()||'You';
+  const dobStr=document.getElementById('dob').value;
+  const tStr  =document.getElementById('targetDate').value;
+  storedDOB   =new Date(dobStr+'T00:00:00');
+  const target=tStr?new Date(tStr+'T00:00:00'):new Date();
+  const isLive=!tStr;
+  if(liveTimer){clearInterval(liveTimer);liveTimer=null;}
+  const a=calcAge(storedDOB,target);
+
+  // ── update UI ──
+  document.getElementById('res-name').textContent=`🎂 ${name}`;
+  document.getElementById('res-dob').textContent =`Born: ${fmtDate(storedDOB)}  →  As of: ${fmtDate(target)}`;
+  document.getElementById('res-main').innerHTML  =
+    `${a.exactYears} <span class="unit">yr${a.exactYears!==1?'s':''}</span>&nbsp;&nbsp;`+
+    `${a.exactMonths} <span class="unit">mo${a.exactMonths!==1?'s':''}</span>&nbsp;&nbsp;`+
+    `${a.exactDays} <span class="unit">day${a.exactDays!==1?'s':''}</span>`;
+  document.getElementById('s-months').textContent =fmt(a.totalMonths);
+  document.getElementById('s-days').textContent   =fmt(a.totalDays);
+  document.getElementById('s-hours').textContent  =fmt(a.totalHours);
+  document.getElementById('s-minutes').textContent=fmt(a.totalMinutes);
+  document.getElementById('s-seconds').textContent=fmt(a.totalSeconds);
+  document.getElementById('s-next').textContent   =a.daysToNext===0?'🎉 Today!':fmt(a.daysToNext);
+
+  // ── store all values for canvas export ──
+  exportData = {
+    name,
+    dobLine : `Born: ${fmtDate(storedDOB)}   →   As of: ${fmtDate(target)}`,
+    ageLine : `${a.exactYears} years,  ${a.exactMonths} months,  ${a.exactDays} days`,
+    subLine : `${fmt(a.totalDays)} total days lived`,
+    months  : fmt(a.totalMonths),
+    days    : fmt(a.totalDays),
+    hours   : fmt(a.totalHours),
+    minutes : fmt(a.totalMinutes),
+    seconds : fmt(a.totalSeconds),
+    next    : a.daysToNext===0?'Today!':fmt(a.daysToNext),
+    genDate : 'Generated: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+  };
+
+  const sec=document.getElementById('result-section');
+  sec.style.display='block';
+  sec.classList.remove('animate');void sec.offsetWidth;sec.classList.add('animate');
+
+  if(isLive){
+    liveTimer=setInterval(()=>{
+      const b=calcAge(storedDOB,new Date());
+      document.getElementById('s-seconds').textContent=fmt(b.totalSeconds);
+      document.getElementById('s-minutes').textContent=fmt(b.totalMinutes);
+    },1000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CANVAS-BASED EXPORT  — draws everything directly, no html2canvas
+//  This guarantees text/gradients always render correctly.
+// ═══════════════════════════════════════════════════════════════
+function buildExportCanvas(){
+  const W=900, scale=2;          // logical width; scale=2 for retina
+  const cw=W*scale;
+
+  // ── layout constants (logical px) ──
+  const PAD=50;
+  const bannerH=160;
+  const heroH  =260;
+  const gridH  =220;
+  const footerH=56;
+  const totalH =bannerH+heroH+gridH+footerH+PAD*2+20;
+
+  const canvas=document.createElement('canvas');
+  canvas.width =cw;
+  canvas.height=(PAD*2+bannerH+heroH+gridH+footerH)*scale;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(scale,scale);
+
+  const CH=canvas.height/scale; // canvas height in logical px
+
+  // ── helpers ──
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+
+  // ── outer dark background ──
+  const outerGrad=ctx.createLinearGradient(0,0,W,CH);
+  outerGrad.addColorStop(0,'#1a0533');
+  outerGrad.addColorStop(0.5,'#2d1b6e');
+  outerGrad.addColorStop(1,'#1a0533');
+  ctx.fillStyle=outerGrad;
+  ctx.fillRect(0,0,W,CH);
+
+  // ── white inner card ──
+  const cx=PAD, cy=PAD, cw2=W-PAD*2, ch2=CH-PAD*2;
+  ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=40;
+  roundRect(cx,cy,cw2,ch2,20);ctx.fillStyle='#ffffff';ctx.fill();
+  ctx.shadowBlur=0;
+
+  // ── purple banner ──
+  const bannerGrad=ctx.createLinearGradient(cx,cy,cx+cw2,cy+bannerH);
+  bannerGrad.addColorStop(0,'#6c63ff');bannerGrad.addColorStop(1,'#a78bfa');
+  roundRect(cx,cy,cw2,bannerH,20);  // top corners only trick:
+  ctx.fillStyle=bannerGrad;ctx.fill();
+  // cover bottom corners of banner so they're square (card clips them)
+  ctx.fillRect(cx,cy+bannerH-20,cw2,20);
+
+  // logo text
+  ctx.textAlign='center';
+  ctx.font='bold 32px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#ffffff';
+  ctx.fillText('AgeAura ✨', W/2, cy+62);
+  ctx.font='12px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.letterSpacing='2px';
+  ctx.fillText('AGE CALCULATOR REPORT', W/2, cy+88);
+  ctx.letterSpacing='0px';
+  // divider line
+  ctx.strokeStyle='rgba(255,255,255,0.35)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(W/2-30,cy+104);ctx.lineTo(W/2+30,cy+104);ctx.stroke();
+
+  // ── hero section ──
+  const heroY=cy+bannerH;
+  const d=exportData;
+
+  // name
+  ctx.textAlign='center';
+  ctx.font='bold 28px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#1a1a2e';
+  ctx.fillText('🎂 '+d.name, W/2, heroY+46);
+
+  // dob line
+  ctx.font='14px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#888888';
+  ctx.fillText(d.dobLine, W/2, heroY+74);
+
+  // ── age box (drawn entirely with canvas — NO CSS gradient) ──
+  const boxX=cx+60, boxW=cw2-120, boxH=110, boxY=heroY+90;
+  const boxGrad=ctx.createLinearGradient(boxX,boxY,boxX+boxW,boxY);
+  boxGrad.addColorStop(0,'#6c63ff');boxGrad.addColorStop(1,'#a78bfa');
+  roundRect(boxX,boxY,boxW,boxH,14);
+  ctx.fillStyle=boxGrad;ctx.fill();
+
+  // "EXACT AGE" label inside box
+  ctx.font='600 11px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.fillText('EXACT AGE', W/2, boxY+28);
+
+  // age value — THE critical line that was blank before
+  ctx.font='bold 30px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#ffffff';
+  ctx.fillText(d.ageLine, W/2, boxY+64);
+
+  // sub text
+  ctx.font='13px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.fillText(d.subLine, W/2, boxY+90);
+
+  // ── stats grid (3 × 2) ──
+  const gridY=heroY+heroH;
+  const cols=3, rows=2;
+  const cellW=cw2/cols, cellH=gridH/rows;
+  const stats=[
+    {val:d.months,  lbl:'TOTAL MONTHS'},
+    {val:d.days,    lbl:'TOTAL DAYS'},
+    {val:d.hours,   lbl:'TOTAL HOURS'},
+    {val:d.minutes, lbl:'TOTAL MINUTES'},
+    {val:d.seconds, lbl:'TOTAL SECONDS', accent:true},
+    {val:d.next,    lbl:'DAYS TO BIRTHDAY'}
+  ];
+
+  // grid border lines
+  ctx.strokeStyle='#f0f0f0';ctx.lineWidth=1;
+  // horizontal line between rows
+  ctx.beginPath();ctx.moveTo(cx,gridY+cellH);ctx.lineTo(cx+cw2,gridY+cellH);ctx.stroke();
+  // vertical lines between cols
+  for(let c=1;c<cols;c++){
+    ctx.beginPath();
+    ctx.moveTo(cx+cellW*c,gridY);ctx.lineTo(cx+cellW*c,gridY+gridH);ctx.stroke();
+  }
+  // top border of grid
+  ctx.beginPath();ctx.moveTo(cx,gridY);ctx.lineTo(cx+cw2,gridY);ctx.stroke();
+
+  stats.forEach((s,i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    const sx=cx+col*cellW, sy=gridY+row*cellH;
+    const mx=sx+cellW/2, my=sy+cellH/2;
+    ctx.textAlign='center';
+    ctx.font='bold 26px "Segoe UI",system-ui,sans-serif';
+    ctx.fillStyle=s.accent?'#ff6584':'#6c63ff';
+    ctx.fillText(s.val, mx, my+6);
+    ctx.font='600 10px "Segoe UI",system-ui,sans-serif';
+    ctx.fillStyle='#999999';
+    ctx.fillText(s.lbl, mx, my+26);
+  });
+
+  // ── footer strip ──
+  const footerY=gridY+gridH;
+  ctx.fillStyle='#f8f8ff';
+  ctx.fillRect(cx,footerY,cw2,footerH);
+  // round bottom corners
+  roundRect(cx,footerY,cw2,footerH,20);ctx.fillStyle='#f8f8ff';ctx.fill();
+  ctx.fillRect(cx,footerY,cw2,20); // square top of footer
+
+  // top border of footer
+  ctx.strokeStyle='#ede8ff';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx,footerY);ctx.lineTo(cx+cw2,footerY);ctx.stroke();
+
+  ctx.font='bold 13px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#6c63ff';ctx.textAlign='left';
+  ctx.fillText('AgeAura ✨', cx+20, footerY+34);
+
+  ctx.font='11px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#aaaaaa';ctx.textAlign='center';
+  ctx.fillText('ageaura.app · Discover every second', W/2, footerY+34);
+
+  ctx.fillStyle='#aaaaaa';ctx.textAlign='right';
+  ctx.fillText(d.genDate, cx+cw2-20, footerY+34);
+
+  return canvas;
+}
+
+// ─── download PNG ───────────────────────────────────────────────
+async function downloadPNG(){
+  if(!exportData.name){alert('Please calculate age first!');return;}
+  const btn=document.getElementById('btnPNG');
+  btn.disabled=true;btn.textContent='⏳ Generating…';
+  try{
+    const canvas=buildExportCanvas();
+    const link=document.createElement('a');
+    link.download='AgeAura-result.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(e){alert('PNG export failed.\n'+e.message);}
+  btn.disabled=false;btn.innerHTML='🖼️ Download PNG';
+}
+
+// ─── download PDF ───────────────────────────────────────────────
+async function downloadPDF(){
+  if(!exportData.name){alert('Please calculate age first!');return;}
+  const btn=document.getElementById('btnPDF');
+  btn.disabled=true;btn.textContent='⏳ Generating…';
+  try{
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const canvas =buildExportCanvas();
+    const imgData=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const margin=10;
+    const imgW=pageW-margin*2;
+    const imgH=(canvas.height/canvas.width)*imgW;
+    const posY=Math.max(margin,(pageH-imgH)/2);
+    pdf.addImage(imgData,'PNG',margin,posY,imgW,imgH,'','FAST');
+    pdf.setFontSize(8);pdf.setTextColor(180);
+    pdf.text('AgeAura ✨  ·  ageaura.app  ·  Developed by Raval',pageW/2,pageH-4,{align:'center'});
+    pdf.save('AgeAura-result.pdf');
+  }catch(e){alert('PDF export failed.\n'+e.message);}
+  btn.disabled=false;btn.innerHTML='📄 Download PDF';
+}
+
+// ─── set DOB max ────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('dob').max=new Date().toISOString().split('T')[0];
+});
+</script>
+</body>
+</html>
